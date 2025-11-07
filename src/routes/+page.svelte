@@ -1,0 +1,22 @@
+<script lang="ts">
+  import Scene from "$lib/Scene.svelte";
+  import { Canvas } from "@threlte/core"
+</script>
+
+<div class="outer">
+    <Canvas>
+        <Scene />
+    </Canvas>
+</div>
+
+<style>
+
+    .outer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+</style>
