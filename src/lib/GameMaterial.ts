@@ -7,7 +7,7 @@ import { Game } from "./Game";
 const uniforms = {
   time: { value: 0 },
   resolution: { value: new THREE.Vector2(1, 1) },
-  playerPos: { value: 0 },
+  playerPos: { value: new THREE.Vector2(0, 0) },
   playerWidth: { value: 0.1 },
   ballPos: { value: new THREE.Vector2(0, 0) },
 };
@@ -19,7 +19,10 @@ export const gameMaterial = new THREE.ShaderMaterial({
 });
 
 export const updateFromGame = (game: Game) => {
-  gameMaterial.uniforms.playerPos.value = game.player.position;
+  gameMaterial.uniforms.playerPos.value.set(
+    game.player.position,
+    game.player.yPos,
+  );
   gameMaterial.uniforms.playerWidth.value = game.player.size;
   gameMaterial.uniforms.ballPos.value.set(
     game.ball.position.x,

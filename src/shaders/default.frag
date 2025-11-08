@@ -1,14 +1,14 @@
 varying vec2 vUv;
 
 uniform vec2 resolution;
-uniform float playerPos;
+uniform vec2 playerPos;
 uniform float playerWidth;
 uniform vec2 ballPos;
 
 // Colors
-#define BG vec3(0.0)
+#define BG vec3(0.3)
 #define PLAYER vec3(1.0, 0.0, 0.0)
-#define BALL vec3 (1.0, 1.0, 0.0)
+#define BALL vec3(1.0, 1.0, 0.0)
 
 // Define a translate macro for float / vec2 so 0,0 is the center
 #define x(TYPE)\
@@ -34,10 +34,12 @@ void main() {
     vec2 offset = (resolution - 1.0) * 0.5;
     vec2 uv = vUv * scale - offset;
 
-    float player = sdBox(vec2(translate(playerPos), 0.05) - uv, vec2(playerWidth * 0.5, 0.01));
+    float player = sdBox(translate(playerPos - vec2(0.0, 0.03)) - uv, vec2(playerWidth * 0.5, 0.01));
     float ball = sdCircle(translate(ballPos) - uv, 0.005);
 
-    vec3 col = mix(PLAYER, BG, smoothstep(0.0, 0.001, player));
+    vec3 bg = mix(vec3(0.0), BG, smoothstep(-0.001, 0.0, uv.x));
+    bg = mix(vec3(0.0), bg, smoothstep(1.001, 1.0, uv.x));
+    vec3 col = mix(PLAYER, bg, smoothstep(0.0, 0.001, player));
     col = mix(BALL, col, smoothstep(0.0, 0.001, ball));
 
     gl_FragColor = vec4(col, 1.0);
