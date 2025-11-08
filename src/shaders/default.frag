@@ -35,6 +35,12 @@ float sdCircle(vec2 p, float r)
     return length(p) - r;
 }
 
+vec4 sampleAtlas(sampler2D atlas, vec2 uv, vec2 atlasDims, float index) {
+    vec2 cellPos = vec2(mod(index, atlasDims.x), floor(index / atlasDims.x));
+    vec2 atlasUv = (uv + cellPos) / atlasDims;
+    return texture2D(atlas, atlasUv);
+}
+
 void main() {
     vec2 scale = resolution;
     vec2 offset = (resolution - 1.0) * 0.5;
@@ -54,12 +60,12 @@ void main() {
     vec2 maxCheck = step(uv, bricksTR);
 
     vec2 bricksUv = (uv - bricksBL) / (bricksTR - bricksBL);
-    float brickPx = step(0.5, texture2D(bricksTex, bricksUv).r);
+    vec4 brickData = texture2D(bricksTex, bricksUv);
+    float brickPx = step(0.5, brickData.r);
+    float brickType = floor(brickData.g * 255.0);
 
-    float typeID = 0.0;
-    vec2 bOffset = vec2(mod(typeID, 4.0), floor(typeID / 1.0)); // for a 4x1 atlas
-    vec2 atlas_uv = (bricksUv + bOffset) / vec2(4.0, 1.0) * vec2(20.0); // scale down to one cell
-    vec4 brickCol = texture2D(brickTextures, atlas_uv);
+    vec2 brickLocalUv = fract(bricksUv * 20.0);
+    vec4 brickCol = sampleAtlas(brickTextures, brickLocalUv, vec2(4.0, 1.0), brickType);
 
     float mask = minCheck.x * minCheck.y * maxCheck.x * maxCheck.y * brickPx;
     col = mix(col, brickCol, step(1.0, mask));
