@@ -88,33 +88,32 @@ export class Ball {
 export class Level {
   cols = 20;
   rows = 20;
-  brickSize = new THREE.Vector2(0.05, 0.01);
   bricks: number[];
   data: Uint8array;
   dataTexture: THREE.DataTexture;
 
   constructor() {
     this.bricks = [
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-      [255, 255, 255, 255, 255, 255, 255, 255, 255,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]
+      [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
+      [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0,   0 ],
+      [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
+      [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
+      [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
+      [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ]
     ];
 
     this.data = new Uint8Array(this.rows * this.cols * 4);
@@ -139,7 +138,63 @@ export class Level {
     }
   }
 
-  intersect(ball: Ball) {
+  intersect(ball: Ball): boolean {
+    // Brick bounds in -1..1 space (shader's bricksBL/TR converted from 0..1 uv space)
+    const bricksBL = { x: -1.0, y: 0.0 };
+    const bricksTR = { x: 1.0, y: 1.0 };
+
+    // Check if ball is in brick area
+    if (ball.position.x < bricksBL.x || ball.position.x > bricksTR.x ||
+        ball.position.y < bricksBL.y || ball.position.y > bricksTR.y) {
+      return false;
+    }
+
+    // Convert to brick UV (0..1 within brick area)
+    const bricksUvX = (ball.position.x - bricksBL.x) / (bricksTR.x - bricksBL.x);
+    const bricksUvY = (ball.position.y - bricksBL.y) / (bricksTR.y - bricksBL.y);
+
+    // Convert to grid coordinates (flip Y to match texture flipY)
+    const gridX = Math.floor(bricksUvX * this.cols);
+    const gridY = this.rows - 1 - Math.floor(bricksUvY * this.rows);
+
+    // Check if brick exists and is visible
+    if (gridY >= 0 && gridY < this.rows && gridX >= 0 && gridX < this.cols) {
+      if (this.bricks[gridY][gridX] > 0) {
+        // Calculate brick boundaries in -1..1 space
+        const brickWidth = (bricksTR.x - bricksBL.x) / this.cols;
+        const brickHeight = (bricksTR.y - bricksBL.y) / this.rows;
+
+        const brickLeft = bricksBL.x + gridX * brickWidth;
+        const brickRight = brickLeft + brickWidth;
+        const brickBottom = bricksTR.y - (gridY + 1) * brickHeight;
+        const brickTop = brickBottom + brickHeight;
+
+        // Determine which edge was hit based on ball position and velocity
+        const distToLeft = Math.abs(ball.position.x - brickLeft);
+        const distToRight = Math.abs(ball.position.x - brickRight);
+        const distToBottom = Math.abs(ball.position.y - brickBottom);
+        const distToTop = Math.abs(ball.position.y - brickTop);
+
+        const minHorizontal = Math.min(distToLeft, distToRight);
+        const minVertical = Math.min(distToBottom, distToTop);
+
+        // Destroy brick
+        this.bricks[gridY][gridX] = 0;
+        this.update();
+        this.dataTexture.needsUpdate = true;
+
+        // Bounce on the axis corresponding to the closest edge
+        if (minHorizontal < minVertical) {
+          ball.velocity.x = -ball.velocity.x;
+        } else {
+          ball.velocity.y = -ball.velocity.y;
+        }
+
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 
@@ -202,6 +257,8 @@ export class Game {
       if (hit) {
         this.ball.bounceY(pos);
       }
+
+      this.level.intersect(this.ball);
 
       if (this.ball.oob()) {
         this.init();
