@@ -68,7 +68,7 @@ void main() {
     vec4 brickCol = sampleAtlas(brickTextures, brickLocalUv, vec2(4.0, 1.0), brickType);
 
     float mask = minCheck.x * minCheck.y * maxCheck.x * maxCheck.y * brickPx;
-    col = mix(col, brickCol, step(1.0, mask));
+    col = mix(col, brickCol, step(1.0, mask) * brickCol.a);
 
     col = mix(BALL, col, smoothstep(0.0, 0.001, ball));
 
