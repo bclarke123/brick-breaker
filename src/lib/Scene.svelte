@@ -1,24 +1,32 @@
-<script lang="ts">
-    import { T } from "@threlte/core";
-
+<script>
+    import { useThrelte, useTask } from "@threlte/core";
+    import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
+    import { ShaderMaterial } from "three";
     import vertexShader from "../shaders/default.vert?raw";
     import fragmentShader from "../shaders/default.frag?raw";
 
+    const { renderStage, renderer } = useThrelte();
+
+    const material = new ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+    });
+
+    const quad = new FullScreenQuad(material);
+
+    $effect(() => {
+        return () => {
+            material.dispose();
+            quad.dispose();
+        };
+    });
+
+    useTask(
+        () => {
+            quad.render(renderer);
+        },
+        {
+            stage: renderStage,
+        },
+    );
 </script>
-
-<T.OrthographicCamera
-    makeDefault
-    left={-0.5}
-    right={0.5}
-    top={0.5}
-    bottom={-0.5}
-    position={[0, 0, 1]}
-    near={0.1}
-    far={100}
-    manual={true}
-/>
-
-<T.Mesh>
-    <T.PlaneGeometry args={[1, 1]}/>
-    <T.ShaderMaterial {vertexShader} {fragmentShader} />
-</T.Mesh>
