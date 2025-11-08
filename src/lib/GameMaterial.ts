@@ -10,6 +10,9 @@ const uniforms = {
   playerPos: { value: new THREE.Vector2(0, 0) },
   playerWidth: { value: 0.1 },
   ballPos: { value: new THREE.Vector2(0, 0) },
+  bricksTex: { value: null }, // DataTexture with info about bricks
+  brickSize: { value: new THREE.Vector2(0.1, 0.1) },
+  brickTextures: { value: null } // Visual texture
 };
 
 export const gameMaterial = new THREE.ShaderMaterial({
@@ -28,8 +31,18 @@ export const updateFromGame = (game: Game) => {
     game.ball.position.x,
     game.ball.position.y,
   );
+
+  gameMaterial.uniforms.bricksTex.value = game.level.dataTexture;
+  gameMaterial.uniforms.brickSize.value = game.level.brickSize;
 };
 
 export const setResolution = (width: Number, height: Number) => {
   gameMaterial.uniforms.resolution.value.set(width, height);
+};
+
+export const init = () => {
+  let bricksTex = new THREE.TextureLoader().load("/bricks.png");
+  bricksTex.wrapS = THREE.RepeatWrapping;
+  bricksTex.wrapT = THREE.RepeatWrapping;
+  gameMaterial.uniforms.brickTextures.value = bricksTex;
 };

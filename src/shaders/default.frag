@@ -5,10 +5,16 @@ uniform vec2 playerPos;
 uniform float playerWidth;
 uniform vec2 ballPos;
 
+uniform sampler2D bricksTex;
+uniform vec2 brickSize;
+
+uniform sampler2D brickTextures;
+
 // Colors
-#define BG vec3(0.3)
-#define PLAYER vec3(1.0, 0.0, 0.0)
-#define BALL vec3(1.0, 1.0, 0.0)
+#define BG vec4(vec3(0.3), 1.0)
+#define PLAYER vec4(1.0, 0.0, 0.0, 1.0)
+#define BALL vec4(1.0, 1.0, 0.0, 1.0)
+#define BRICK vec4(0.0, 1.0, 0.0, 1.0)
 
 // Define a translate macro for float / vec2 so 0,0 is the center
 #define x(TYPE)\
@@ -37,10 +43,28 @@ void main() {
     float player = sdBox(translate(playerPos - vec2(0.0, 0.03)) - uv, vec2(playerWidth * 0.5, 0.01));
     float ball = sdCircle(translate(ballPos) - uv, 0.005);
 
-    vec3 bg = mix(vec3(0.0), BG, smoothstep(-0.001, 0.0, uv.x));
-    bg = mix(vec3(0.0), bg, smoothstep(1.001, 1.0, uv.x));
-    vec3 col = mix(PLAYER, bg, smoothstep(0.0, 0.001, player));
+    vec4 bg = mix(vec4(vec3(0.0), 1.0), BG, smoothstep(-0.0001, 0.0, uv.x));
+    bg = mix(vec4(vec3(0.0), 1.0), bg, smoothstep(1.0001, 1.0, uv.x));
+    vec4 col = mix(PLAYER, bg, smoothstep(0.0, 0.001, player));
+
+    vec2 bricksBL = vec2(0.0, 0.5);
+    vec2 bricksTR = vec2(1.0, 1.0);
+
+    vec2 minCheck = step(bricksBL, uv);
+    vec2 maxCheck = step(uv, bricksTR);
+
+    vec2 bricksUv = (uv - bricksBL) / (bricksTR - bricksBL);
+    float brickPx = step(0.5, texture2D(bricksTex, bricksUv).r);
+
+    float typeID = 0.0;
+    vec2 bOffset = vec2(mod(typeID, 4.0), floor(typeID / 1.0)); // for a 4x1 atlas
+    vec2 atlas_uv = (bricksUv + bOffset) / vec2(4.0, 1.0) * vec2(20.0); // scale down to one cell
+    vec4 brickCol = texture2D(brickTextures, atlas_uv);
+
+    float mask = minCheck.x * minCheck.y * maxCheck.x * maxCheck.y * brickPx;
+    col = mix(col, brickCol, step(1.0, mask));
+
     col = mix(BALL, col, smoothstep(0.0, 0.001, ball));
 
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = col;
 }

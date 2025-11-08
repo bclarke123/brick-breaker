@@ -1,13 +1,14 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { useThrelte, useTask } from "@threlte/core";
     import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
     import {
         gameMaterial,
         setResolution,
         updateFromGame,
+        init
     } from "$lib/GameMaterial";
     import { Game } from "$lib/Game";
-    import Page from "../routes/+page.svelte";
 
     const { renderStage, renderer } = useThrelte();
     const quad = new FullScreenQuad(gameMaterial);
@@ -25,6 +26,7 @@
     resize();
 
     const game = new Game();
+    updateFromGame(game);
 
     const keyEvent = (event: KeyboardEvent, down: boolean) => {
         if (event.key === "ArrowLeft") {
@@ -54,6 +56,10 @@
             gameMaterial.dispose();
             quad.dispose();
         };
+    });
+
+    onMount(() => {
+      init();
     });
 
     useTask(
