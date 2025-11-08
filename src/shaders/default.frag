@@ -34,7 +34,7 @@ void main() {
     vec2 offset = (resolution - 1.0) * 0.5;
     vec2 uv = vUv * scale - offset;
 
-    float player = sdBox(vec2(translate(playerPos), 0.05) - uv, vec2(playerWidth, 0.01));
+    float player = sdBox(vec2(translate(playerPos), 0.05) - uv, vec2(playerWidth * 0.5, 0.01));
     float ball = sdCircle(translate(ballPos) - uv, 0.005);
 
     vec3 col = mix(PLAYER, BG, smoothstep(0.0, 0.001, player));

@@ -15,23 +15,22 @@ export class Player {
     this.position = Math.min(1 - this.size * 0.5, this.position + this.speed);
   }
 
-  intersect(ball: Ball): boolean {
+  intersect(ball: Ball): { hit: boolean; pos: number } {
     if (
       ball.position.x > this.position - this.size &&
       ball.position.x < this.position + this.size &&
       ball.position.y < -0.87 &&
       ball.velocity.y < 0
     ) {
-      console.log(ball.position.x - this.position);
-      return true;
+      return { hit: true, pos: (ball.position.x - this.position) / this.size };
     }
 
-    return false;
+    return { hit: false, pos: -1 };
   }
 }
 
 export class Ball {
-  position = new THREE.Vector2(0, 0);
+  position = new THREE.Vector2(0, -0.87);
   velocity = new THREE.Vector2(0, 0);
 
   tick() {
@@ -58,20 +57,12 @@ export class Ball {
     }
   }
 
-  bounceX(addRandom = false) {
+  bounceX() {
     this.velocity.x = -this.velocity.x;
-
-    if (addRandom) {
-      this.velocity.y += (Math.random() - 0.5) * 0.01;
-    }
   }
 
-  bounceY(addRandom = false) {
+  bounceY() {
     this.velocity.y = -this.velocity.y;
-
-    if (addRandom) {
-      this.velocity.x += (Math.random() - 0.5) * 0.01;
-    }
   }
 }
 
@@ -99,8 +90,7 @@ export class Game {
       return;
     }
 
-    this.ball.position.set(0, 0);
-    this.ball.velocity.set((Math.random() - 0.5) * 0.005, -0.01);
+    this.ball.velocity.set((Math.random() - 0.5) * 0.005, 0.01);
 
     this.state = GameState.PLAYING;
   }
@@ -108,16 +98,24 @@ export class Game {
   tick(_delta: Number) {
     if (this.leftDown) {
       this.player.moveLeft();
+      if (this.state === GameState.IDLE) {
+        this.ball.position.x = this.player.position;
+      }
     }
     if (this.rightDown) {
       this.player.moveRight();
+      if (this.state === GameState.IDLE) {
+        this.ball.position.x = this.player.position;
+      }
     }
 
     if (this.state === GameState.PLAYING) {
       this.ball.tick();
 
-      if (this.player.intersect(this.ball)) {
-        this.ball.bounceY(true);
+      const { hit, pos } = this.player.intersect(this.ball);
+      if (hit) {
+        this.ball.bounceY();
+        this.ball.velocity.x += pos * 0.01;
       }
     }
   }
