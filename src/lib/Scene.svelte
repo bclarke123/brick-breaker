@@ -7,6 +7,7 @@
         updateFromGame,
     } from "$lib/GameMaterial";
     import { Game } from "$lib/Game";
+    import Page from "../routes/+page.svelte";
 
     const { renderStage, renderer } = useThrelte();
     const quad = new FullScreenQuad(gameMaterial);
@@ -30,6 +31,8 @@
             game.leftDown = down;
         } else if (event.key === "ArrowRight") {
             game.rightDown = down;
+        } else if (event.key === "ArrowUp") {
+            game.begin();
         }
     };
 
