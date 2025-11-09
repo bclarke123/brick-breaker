@@ -3,12 +3,12 @@
     import { useThrelte, useTask } from "@threlte/core";
     import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
     import {
+        Game,
         gameMaterial,
         setResolution,
         updateFromGame,
         init
-    } from "$lib/GameMaterial";
-    import { Game } from "$lib/Game";
+    } from "$lib/brick-breaker";
 
     const { renderStage, renderer } = useThrelte();
     const quad = new FullScreenQuad(gameMaterial);

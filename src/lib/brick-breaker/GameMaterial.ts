@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import vertexShader from "../shaders/default.vert?raw";
-import fragmentShader from "../shaders/default.frag?raw";
+import vertexShader from "./shaders/default.vert?raw";
+import fragmentShader from "./shaders/default.frag?raw";
 
 import { Game } from "./Game";
 
