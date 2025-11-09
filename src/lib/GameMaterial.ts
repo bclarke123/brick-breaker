@@ -57,7 +57,7 @@ export const init = () => {
   gameMaterial.uniforms.paddleTexture.value = paddleTex;
 
   const bgTex = loader.load("/background.jpg");
-  paddleTex.magFilter = THREE.NearestFilter;
+  bgTex.magFilter = THREE.NearestFilter;
   bgTex.minFilter = THREE.NearestFilter;
   gameMaterial.uniforms.bgTexture.value = bgTex;
 };
