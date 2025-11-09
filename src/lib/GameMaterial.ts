@@ -46,9 +46,13 @@ export const init = () => {
   let bricksTex = loader.load("/bricks.png");
   bricksTex.wrapS = THREE.RepeatWrapping;
   bricksTex.wrapT = THREE.RepeatWrapping;
+  bricksTex.magFilter = THREE.NearestFilter;
+  bricksTex.minFilter = THREE.NearestFilter;
   gameMaterial.uniforms.brickTextures.value = bricksTex;
 
   let paddleTex = loader.load("/paddle.png");
+  paddleTex.magFilter = THREE.NearestFilter;
+  paddleTex.minFilter = THREE.NearestFilter;
   gameMaterial.uniforms.paddleTexture.value = paddleTex;
 
 };
