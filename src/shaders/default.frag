@@ -43,6 +43,13 @@ vec4 sampleAtlas(sampler2D atlas, vec2 uv, vec2 atlasDims, float index) {
     return texture2D(atlas, atlasUv);
 }
 
+void checkBounds(vec2 uv, vec2 bl, vec2 tr, out float mask, out vec2 localUv) {
+    vec2 minCheck = step(bl, uv);
+    vec2 maxCheck = step(uv, tr);
+    mask = minCheck.x * minCheck.y * maxCheck.x * maxCheck.y;
+    localUv = (uv - bl) / (tr - bl);
+}
+
 void main() {
     vec2 scale = resolution;
     vec2 offset = (resolution - 1.0) * 0.5;
@@ -57,13 +64,11 @@ void main() {
     vec2 paddleBL = paddleCenter - vec2(playerWidth * 0.5, 0.005);
     vec2 paddleTR = paddleCenter + vec2(playerWidth * 0.5, 0.005);
 
-    vec2 pMinCheck = step(paddleBL, uv);
-    vec2 pMaxCheck = step(uv, paddleTR);
-
-    float paddleMask = pMinCheck.x * pMinCheck.y * pMaxCheck.x * pMaxCheck.y;
+    float paddleMask;
+    vec2 paddleUv;
+    checkBounds(uv, paddleBL, paddleTR, paddleMask, paddleUv);
 
     // Only sample texture if we're in the paddle bounds (avoid expensive texture lookup for most pixels)
-    vec2 paddleUv = (uv - paddleBL) / (paddleTR - paddleBL);
     vec4 paddlePx = paddleMask > 0.5 ? texture2D(paddleTexture, paddleUv) : vec4(0.0);
 
     vec4 col = mix(bg, paddlePx, step(1.0, paddleMask) * paddlePx.a);
@@ -71,11 +76,9 @@ void main() {
     vec2 bricksBL = vec2(0.0, 0.5);
     vec2 bricksTR = vec2(1.0, 1.0);
 
-    vec2 minCheck = step(bricksBL, uv);
-    vec2 maxCheck = step(uv, bricksTR);
-    float areaMask = minCheck.x * minCheck.y * maxCheck.x * maxCheck.y;
-
-    vec2 bricksUv = (uv - bricksBL) / (bricksTR - bricksBL);
+    float areaMask;
+    vec2 bricksUv;
+    checkBounds(uv, bricksBL, bricksTR, areaMask, bricksUv);
 
     // Only sample brick data texture if we're in the brick area
     vec4 brickData = areaMask > 0.5 ? texture2D(bricksTex, bricksUv) : vec4(0.0);
