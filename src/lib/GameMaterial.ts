@@ -54,5 +54,4 @@ export const init = () => {
   paddleTex.magFilter = THREE.NearestFilter;
   paddleTex.minFilter = THREE.NearestFilter;
   gameMaterial.uniforms.paddleTexture.value = paddleTex;
-
 };
