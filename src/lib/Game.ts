@@ -2,6 +2,44 @@ import * as THREE from "three";
 
 const tmpv2 = new THREE.Vector2();
 
+// Helper for line-segment vs AABB collision (continuous collision detection)
+function lineAABBIntersection(
+  start: THREE.Vector2,
+  end: THREE.Vector2,
+  left: number,
+  right: number,
+  bottom: number,
+  top: number
+): { hit: boolean; t: number; horizontal: boolean } {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+
+  // Handle edge case where line segment has no length
+  if (dx === 0 && dy === 0) {
+    const inside = start.x >= left && start.x <= right && start.y >= bottom && start.y <= top;
+    return { hit: inside, t: 0, horizontal: false };
+  }
+
+  const tMinX = dx !== 0 ? (left - start.x) / dx : -Infinity;
+  const tMaxX = dx !== 0 ? (right - start.x) / dx : Infinity;
+  const tMinY = dy !== 0 ? (bottom - start.y) / dy : -Infinity;
+  const tMaxY = dy !== 0 ? (top - start.y) / dy : Infinity;
+
+  const tEnterX = Math.min(tMinX, tMaxX);
+  const tExitX = Math.max(tMinX, tMaxX);
+  const tEnterY = Math.min(tMinY, tMaxY);
+  const tExitY = Math.max(tMinY, tMaxY);
+
+  const tEnter = Math.max(tEnterX, tEnterY);
+  const tExit = Math.min(tExitX, tExitY);
+
+  // Check if there's an intersection in the segment [0, 1]
+  const hit = tEnter <= tExit && tExit >= 0 && tEnter <= 1;
+  const horizontal = tEnterX > tEnterY;
+
+  return { hit, t: tEnter, horizontal };
+}
+
 export class Player {
   yPos = -0.9;
   position = 0;
@@ -17,13 +55,31 @@ export class Player {
   }
 
   intersect(ball: Ball): { hit: boolean; pos: number } {
-    if (
-      ball.position.x > this.position - this.size &&
-      ball.position.x < this.position + this.size &&
-      ball.position.y < this.yPos &&
-      ball.velocity.y < 0
-    ) {
-      return { hit: true, pos: (ball.position.x - this.position) / this.size };
+    // Only check if ball is moving downward
+    if (ball.velocity.y >= 0) {
+      return { hit: false, pos: -1 };
+    }
+
+    // Use continuous collision detection
+    const paddleLeft = this.position - this.size;
+    const paddleRight = this.position + this.size;
+    const paddleBottom = this.yPos - 0.05; // Small height for the paddle
+    const paddleTop = this.yPos;
+
+    const result = lineAABBIntersection(
+      ball.prevPosition,
+      ball.position,
+      paddleLeft,
+      paddleRight,
+      paddleBottom,
+      paddleTop
+    );
+
+    if (result.hit) {
+      // Calculate intersection point to determine position on paddle
+      const hitX = ball.prevPosition.x + (ball.position.x - ball.prevPosition.x) * result.t;
+      const pos = (hitX - this.position) / this.size;
+      return { hit: true, pos };
     }
 
     return { hit: false, pos: -1 };
@@ -33,29 +89,36 @@ export class Player {
 export class Ball {
   speed = 0.02;
   position = new THREE.Vector2(0, 0);
+  prevPosition = new THREE.Vector2(0, 0);
   velocity = new THREE.Vector2(0, 0);
 
   tick() {
+    this.prevPosition.copy(this.position);
     this.position.add(this.velocity);
 
-    if (this.position.x >= 1 && this.velocity.x > 0) {
+    // Continuous collision with walls
+    // Check right wall (x = 1)
+    if (this.velocity.x > 0 && this.prevPosition.x < 1 && this.position.x >= 1) {
       this.velocity.x = -this.velocity.x;
-      return;
+      this.position.x = 1 - (this.position.x - 1);
     }
 
-    if (this.position.x <= -1 && this.velocity.x < 0) {
+    // Check left wall (x = -1)
+    if (this.velocity.x < 0 && this.prevPosition.x > -1 && this.position.x <= -1) {
       this.velocity.x = -this.velocity.x;
-      return;
+      this.position.x = -1 - (this.position.x + 1);
     }
 
-    if (this.position.y >= 1 && this.velocity.y > 0) {
+    // Check top wall (y = 1)
+    if (this.velocity.y > 0 && this.prevPosition.y < 1 && this.position.y >= 1) {
       this.velocity.y = -this.velocity.y;
-      return;
+      this.position.y = 1 - (this.position.y - 1);
     }
 
-    if (this.position.y <= -1 && this.velocity.y < 0) {
+    // Check bottom wall (y = -1) - though this is usually handled by oob()
+    if (this.velocity.y < 0 && this.prevPosition.y > -1 && this.position.y <= -1) {
       this.velocity.y = -this.velocity.y;
-      return;
+      this.position.y = -1 - (this.position.y + 1);
     }
   }
 
@@ -139,59 +202,73 @@ export class Level {
   }
 
   intersect(ball: Ball): boolean {
-    // Brick bounds in -1..1 space (shader's bricksBL/TR converted from 0..1 uv space)
+    // Brick bounds in -1..1 space
     const bricksBL = { x: -1.0, y: 0.0 };
     const bricksTR = { x: 1.0, y: 1.0 };
 
-    // Check if ball is in brick area
-    if (ball.position.x < bricksBL.x || ball.position.x > bricksTR.x ||
-        ball.position.y < bricksBL.y || ball.position.y > bricksTR.y) {
-      return false;
-    }
+    const brickWidth = (bricksTR.x - bricksBL.x) / this.cols;
+    const brickHeight = (bricksTR.y - bricksBL.y) / this.rows;
 
-    // Convert to brick UV (0..1 within brick area)
-    const bricksUvX = (ball.position.x - bricksBL.x) / (bricksTR.x - bricksBL.x);
-    const bricksUvY = (ball.position.y - bricksBL.y) / (bricksTR.y - bricksBL.y);
+    // Calculate bounding box of the line segment to limit brick checks
+    const minX = Math.min(ball.prevPosition.x, ball.position.x);
+    const maxX = Math.max(ball.prevPosition.x, ball.position.x);
+    const minY = Math.min(ball.prevPosition.y, ball.position.y);
+    const maxY = Math.max(ball.prevPosition.y, ball.position.y);
 
-    // Convert to grid coordinates (flip Y to match texture flipY)
-    const gridX = Math.floor(bricksUvX * this.cols);
-    const gridY = this.rows - 1 - Math.floor(bricksUvY * this.rows);
+    // Convert bounds to grid coordinates
+    const minGridX = Math.max(0, Math.floor(((minX - bricksBL.x) / (bricksTR.x - bricksBL.x)) * this.cols));
+    const maxGridX = Math.min(this.cols - 1, Math.floor(((maxX - bricksBL.x) / (bricksTR.x - bricksBL.x)) * this.cols));
+    const minGridY = Math.max(0, this.rows - 1 - Math.floor(((maxY - bricksBL.y) / (bricksTR.y - bricksBL.y)) * this.rows));
+    const maxGridY = Math.min(this.rows - 1, this.rows - 1 - Math.floor(((minY - bricksBL.y) / (bricksTR.y - bricksBL.y)) * this.rows));
 
-    // Check if brick exists and is visible
-    if (gridY >= 0 && gridY < this.rows && gridX >= 0 && gridX < this.cols) {
-      if (this.bricks[gridY][gridX] > 0) {
-        // Calculate brick boundaries in -1..1 space
-        const brickWidth = (bricksTR.x - bricksBL.x) / this.cols;
-        const brickHeight = (bricksTR.y - bricksBL.y) / this.rows;
+    let closestT = Infinity;
+    let hitGridX = -1;
+    let hitGridY = -1;
+    let hitHorizontal = false;
 
+    // Check all bricks in the path's bounding box
+    for (let gridY = minGridY; gridY <= maxGridY; gridY++) {
+      for (let gridX = minGridX; gridX <= maxGridX; gridX++) {
+        if (this.bricks[gridY][gridX] === 0) continue;
+
+        // Calculate brick boundaries
         const brickLeft = bricksBL.x + gridX * brickWidth;
         const brickRight = brickLeft + brickWidth;
         const brickBottom = bricksTR.y - (gridY + 1) * brickHeight;
         const brickTop = brickBottom + brickHeight;
 
-        // Determine which edge was hit based on ball position and velocity
-        const distToLeft = Math.abs(ball.position.x - brickLeft);
-        const distToRight = Math.abs(ball.position.x - brickRight);
-        const distToBottom = Math.abs(ball.position.y - brickBottom);
-        const distToTop = Math.abs(ball.position.y - brickTop);
+        const result = lineAABBIntersection(
+          ball.prevPosition,
+          ball.position,
+          brickLeft,
+          brickRight,
+          brickBottom,
+          brickTop
+        );
 
-        const minHorizontal = Math.min(distToLeft, distToRight);
-        const minVertical = Math.min(distToBottom, distToTop);
-
-        // Destroy brick
-        this.bricks[gridY][gridX] = 0;
-        this.update();
-        this.dataTexture.needsUpdate = true;
-
-        // Bounce on the axis corresponding to the closest edge
-        if (minHorizontal < minVertical) {
-          ball.velocity.x = -ball.velocity.x;
-        } else {
-          ball.velocity.y = -ball.velocity.y;
+        if (result.hit && result.t < closestT) {
+          closestT = result.t;
+          hitGridX = gridX;
+          hitGridY = gridY;
+          hitHorizontal = result.horizontal;
         }
-
-        return true;
       }
+    }
+
+    // If we found a hit, destroy the brick and bounce
+    if (hitGridX >= 0) {
+      this.bricks[hitGridY][hitGridX] = 0;
+      this.update();
+      this.dataTexture.needsUpdate = true;
+
+      // Bounce based on which face was hit
+      if (hitHorizontal) {
+        ball.velocity.x = -ball.velocity.x;
+      } else {
+        ball.velocity.y = -ball.velocity.y;
+      }
+
+      return true;
     }
 
     return false;
@@ -224,6 +301,7 @@ export class Game {
   init() {
     this.state = GameState.IDLE;
     this.ball.position.set(this.player.position, this.player.yPos);
+    this.ball.prevPosition.copy(this.ball.position);
   }
 
   begin() {
