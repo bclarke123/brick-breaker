@@ -13,7 +13,8 @@ const uniforms = {
   bricksTex: { value: null }, // DataTexture with info about bricks
   brickSize: { value: new THREE.Vector2(0.1, 0.1) },
   brickTextures: { value: null }, // Visual texture
-  paddleTexture: { value: null }
+  paddleTexture: { value: null },
+  bgTexture: { value: null },
 };
 
 export const gameMaterial = new THREE.ShaderMaterial({
@@ -42,16 +43,21 @@ export const setResolution = (width: Number, height: Number) => {
 };
 
 export const init = () => {
-  let loader = new THREE.TextureLoader();
-  let bricksTex = loader.load("/bricks.png");
+  const loader = new THREE.TextureLoader();
+  const bricksTex = loader.load("/bricks.png");
   bricksTex.wrapS = THREE.RepeatWrapping;
   bricksTex.wrapT = THREE.RepeatWrapping;
   bricksTex.magFilter = THREE.NearestFilter;
   bricksTex.minFilter = THREE.NearestFilter;
   gameMaterial.uniforms.brickTextures.value = bricksTex;
 
-  let paddleTex = loader.load("/paddle.png");
+  const paddleTex = loader.load("/paddle.png");
   paddleTex.magFilter = THREE.NearestFilter;
   paddleTex.minFilter = THREE.NearestFilter;
   gameMaterial.uniforms.paddleTexture.value = paddleTex;
+
+  const bgTex = loader.load("/background.jpg");
+  paddleTex.magFilter = THREE.NearestFilter;
+  bgTex.minFilter = THREE.NearestFilter;
+  gameMaterial.uniforms.bgTexture.value = bgTex;
 };

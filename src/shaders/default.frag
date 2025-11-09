@@ -4,19 +4,16 @@ uniform vec2 resolution;
 uniform vec2 playerPos;
 uniform float playerWidth;
 uniform vec2 ballPos;
-
-uniform sampler2D bricksTex;
 uniform vec2 brickSize;
 
+uniform sampler2D bgTexture;
+uniform sampler2D bricksTex;
 uniform sampler2D brickTextures;
-
 uniform sampler2D paddleTexture;
 
 // Colors
 #define BG vec4(vec3(0.3), 1.0)
-#define PLAYER vec4(1.0, 0.0, 0.0, 1.0)
-#define BALL vec4(1.0, 1.0, 0.0, 1.0)
-#define BRICK vec4(0.0, 1.0, 0.0, 1.0)
+#define BALL vec4(0.2, 0.15, 0.37, 1.0)
 
 // Define a translate macro for float / vec2 so 0,0 is the center
 #define x(TYPE)\
@@ -57,8 +54,24 @@ void main() {
 
     float ball = sdCircle(translate(ballPos) - uv, 0.005);
 
-    vec4 bg = mix(vec4(vec3(0.0), 1.0), BG, smoothstep(-0.0001, 0.0, uv.x));
-    bg = mix(vec4(vec3(0.0), 1.0), bg, smoothstep(1.0001, 1.0, uv.x));
+    vec2 bgScale = vec2(1.0, 1.15);
+    vec2 bgOffset = vec2(0.0, 0.0);
+
+    // Center UVs
+    vec2 centeredUv = vUv - 0.5;
+
+    // Scale Y by bgScale.y
+    float yScale = 1.0 / bgScale.y;
+
+    // Scale X to maintain aspect ratio (accounting for viewport aspect ratio)
+    float viewportAspect = resolution.x;
+    float xScale = yScale * viewportAspect;
+
+    // Apply scaling and offset
+    vec2 bgUv = centeredUv * vec2(xScale, yScale) - bgOffset + 0.5;
+    vec4 bg = texture2D(bgTexture, bgUv);
+    // vec4 bg = mix(vec4(vec3(0.0), 1.0), bgTex, smoothstep(-0.0001, 0.0, uv.x));
+    // bg = mix(vec4(vec3(0.0), 1.0), bg, smoothstep(1.0001, 1.0, uv.x));
 
     vec2 paddleCenter = vec2(translate(playerPos - vec2(0.0, 0.03)));
     vec2 paddleBL = paddleCenter - vec2(playerWidth * 0.5, 0.005);
