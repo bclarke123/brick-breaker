@@ -151,8 +151,8 @@ export class Ball {
 export class Level {
   cols = 20;
   rows = 20;
-  bricks: number[];
-  data: Uint8array;
+  bricks: number[][];
+  data: Uint8Array;
   dataTexture: THREE.DataTexture;
 
   constructor() {
