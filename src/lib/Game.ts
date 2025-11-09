@@ -44,14 +44,14 @@ export class Player {
   yPos = -0.9;
   position = 0;
   size = 0.1;
-  speed = 0.02;
+  speed = 1.2; // units per second (was 0.02 per frame at 60fps)
 
-  moveLeft() {
-    this.position = Math.max(-1 + this.size, this.position - this.speed);
+  moveLeft(delta: number) {
+    this.position = Math.max(-1 + this.size, this.position - this.speed * delta);
   }
 
-  moveRight() {
-    this.position = Math.min(1 - this.size, this.position + this.speed);
+  moveRight(delta: number) {
+    this.position = Math.min(1 - this.size, this.position + this.speed * delta);
   }
 
   intersect(ball: Ball): { hit: boolean; pos: number } {
@@ -87,14 +87,14 @@ export class Player {
 }
 
 export class Ball {
-  speed = 0.02;
+  speed = 1.2; // units per second (was 0.02 per frame at 60fps)
   position = new THREE.Vector2(0, 0);
   prevPosition = new THREE.Vector2(0, 0);
   velocity = new THREE.Vector2(0, 0);
 
-  tick() {
+  tick(delta: number) {
     this.prevPosition.copy(this.position);
-    this.position.add(this.velocity);
+    this.position.add(tmpv2.copy(this.velocity).multiplyScalar(delta));
 
     // Continuous collision with walls
     // Check right wall (x = 1)
@@ -323,15 +323,15 @@ export class Game {
     this.state = GameState.PLAYING;
   }
 
-  tick(_delta: Number) {
+  tick(delta: number) {
     if (this.leftDown) {
-      this.player.moveLeft();
+      this.player.moveLeft(delta);
       if (this.state === GameState.IDLE) {
         this.ball.position.x = this.player.position;
       }
     }
     if (this.rightDown) {
-      this.player.moveRight();
+      this.player.moveRight(delta);
       if (this.state === GameState.IDLE) {
         this.ball.position.x = this.player.position;
       }
@@ -350,7 +350,7 @@ export class Game {
         return;
       }
 
-      this.ball.tick();
+      this.ball.tick(delta);
     }
   }
 }
