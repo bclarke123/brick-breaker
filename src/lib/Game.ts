@@ -258,7 +258,14 @@ export class Level {
     // If we found a hit, destroy the brick and bounce
     if (hitGridX >= 0) {
       this.bricks[hitGridY][hitGridX] = 0;
-      this.update();
+
+      // Update only the specific brick in the texture data (O(1) instead of O(400))
+      const index = (this.cols * hitGridY + hitGridX) * 4;
+      this.data[index] = 0;
+      this.data[index + 1] = 0;
+      this.data[index + 2] = 0;
+      this.data[index + 3] = 0;
+
       this.dataTexture.needsUpdate = true;
 
       // Bounce based on which face was hit

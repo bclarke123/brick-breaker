@@ -10,6 +10,8 @@ uniform vec2 brickSize;
 
 uniform sampler2D brickTextures;
 
+uniform sampler2D paddleTexture;
+
 // Colors
 #define BG vec4(vec3(0.3), 1.0)
 #define PLAYER vec4(1.0, 0.0, 0.0, 1.0)
@@ -46,28 +48,45 @@ void main() {
     vec2 offset = (resolution - 1.0) * 0.5;
     vec2 uv = vUv * scale - offset;
 
-    float player = sdBox(translate(playerPos - vec2(0.0, 0.03)) - uv, vec2(playerWidth * 0.5, 0.01));
     float ball = sdCircle(translate(ballPos) - uv, 0.005);
 
     vec4 bg = mix(vec4(vec3(0.0), 1.0), BG, smoothstep(-0.0001, 0.0, uv.x));
     bg = mix(vec4(vec3(0.0), 1.0), bg, smoothstep(1.0001, 1.0, uv.x));
-    vec4 col = mix(PLAYER, bg, smoothstep(0.0, 0.001, player));
+
+    vec2 paddleCenter = vec2(translate(playerPos - vec2(0.0, 0.03)));
+    vec2 paddleBL = paddleCenter - vec2(playerWidth * 0.5, 0.005);
+    vec2 paddleTR = paddleCenter + vec2(playerWidth * 0.5, 0.005);
+
+    vec2 pMinCheck = step(paddleBL, uv);
+    vec2 pMaxCheck = step(uv, paddleTR);
+
+    float paddleMask = pMinCheck.x * pMinCheck.y * pMaxCheck.x * pMaxCheck.y;
+
+    // Only sample texture if we're in the paddle bounds (avoid expensive texture lookup for most pixels)
+    vec2 paddleUv = (uv - paddleBL) / (paddleTR - paddleBL);
+    vec4 paddlePx = paddleMask > 0.5 ? texture2D(paddleTexture, paddleUv) : vec4(0.0);
+
+    vec4 col = mix(bg, paddlePx, step(1.0, paddleMask) * paddlePx.a);
 
     vec2 bricksBL = vec2(0.0, 0.5);
     vec2 bricksTR = vec2(1.0, 1.0);
 
     vec2 minCheck = step(bricksBL, uv);
     vec2 maxCheck = step(uv, bricksTR);
+    float areaMask = minCheck.x * minCheck.y * maxCheck.x * maxCheck.y;
 
     vec2 bricksUv = (uv - bricksBL) / (bricksTR - bricksBL);
-    vec4 brickData = texture2D(bricksTex, bricksUv);
+
+    // Only sample brick data texture if we're in the brick area
+    vec4 brickData = areaMask > 0.5 ? texture2D(bricksTex, bricksUv) : vec4(0.0);
     float brickPx = step(0.5, brickData.r);
     float brickType = floor(brickData.g * 255.0);
 
     vec2 brickLocalUv = fract(bricksUv * 20.0);
-    vec4 brickCol = sampleAtlas(brickTextures, brickLocalUv, vec2(4.0, 1.0), brickType);
+    // Only sample brick appearance texture if there's actually a brick
+    vec4 brickCol = (areaMask > 0.5 && brickPx > 0.5) ? sampleAtlas(brickTextures, brickLocalUv, vec2(4.0, 1.0), brickType) : vec4(0.0);
 
-    float mask = minCheck.x * minCheck.y * maxCheck.x * maxCheck.y * brickPx;
+    float mask = areaMask * brickPx;
     col = mix(col, brickCol, step(1.0, mask) * brickCol.a);
 
     col = mix(BALL, col, smoothstep(0.0, 0.001, ball));

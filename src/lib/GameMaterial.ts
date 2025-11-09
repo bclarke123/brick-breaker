@@ -12,7 +12,8 @@ const uniforms = {
   ballPos: { value: new THREE.Vector2(0, 0) },
   bricksTex: { value: null }, // DataTexture with info about bricks
   brickSize: { value: new THREE.Vector2(0.1, 0.1) },
-  brickTextures: { value: null } // Visual texture
+  brickTextures: { value: null }, // Visual texture
+  paddleTexture: { value: null }
 };
 
 export const gameMaterial = new THREE.ShaderMaterial({
@@ -41,8 +42,13 @@ export const setResolution = (width: Number, height: Number) => {
 };
 
 export const init = () => {
-  let bricksTex = new THREE.TextureLoader().load("/bricks.png");
+  let loader = new THREE.TextureLoader();
+  let bricksTex = loader.load("/bricks.png");
   bricksTex.wrapS = THREE.RepeatWrapping;
   bricksTex.wrapT = THREE.RepeatWrapping;
   gameMaterial.uniforms.brickTextures.value = bricksTex;
+
+  let paddleTex = loader.load("/paddle.png");
+  gameMaterial.uniforms.paddleTexture.value = paddleTex;
+
 };
