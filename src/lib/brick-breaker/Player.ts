@@ -1,3 +1,4 @@
+import { Ball } from "./Ball";
 import { lineAABBIntersection } from "./utils";
 
 export class Player {
@@ -7,7 +8,10 @@ export class Player {
   speed = 1.2; // units per second (was 0.02 per frame at 60fps)
 
   moveLeft(delta: number) {
-    this.position = Math.max(-1 + this.size, this.position - this.speed * delta);
+    this.position = Math.max(
+      -1 + this.size,
+      this.position - this.speed * delta,
+    );
   }
 
   moveRight(delta: number) {
@@ -32,12 +36,14 @@ export class Player {
       paddleLeft,
       paddleRight,
       paddleBottom,
-      paddleTop
+      paddleTop,
     );
 
     if (result.hit) {
       // Calculate intersection point to determine position on paddle
-      const hitX = ball.prevPosition.x + (ball.position.x - ball.prevPosition.x) * result.t;
+      const hitX =
+        ball.prevPosition.x +
+        (ball.position.x - ball.prevPosition.x) * result.t;
       const pos = (hitX - this.position) / this.size;
       return { hit: true, pos };
     }

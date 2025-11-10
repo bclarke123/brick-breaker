@@ -20,6 +20,7 @@ export class GameMaterial {
       ballPos: { value: new THREE.Vector2(0, 0) },
       bricksTex: { value: null }, // DataTexture with info about bricks
       brickTextures: { value: null }, // Visual texture
+      brickCols: { value: 10 },
       paddleTexture: { value: null },
       bgTexture: { value: null },
     };
@@ -67,6 +68,7 @@ export class GameMaterial {
     );
 
     material.uniforms.bricksTex.value = game.level.dataTexture;
+    material.uniforms.brickCols.value = game.level.cols;
   }
 
   setResolution(width: Number, height: Number) {

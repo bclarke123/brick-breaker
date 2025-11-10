@@ -4,7 +4,7 @@ uniform vec2 resolution;
 uniform vec2 playerPos;
 uniform float playerWidth;
 uniform vec2 ballPos;
-uniform vec2 brickSize;
+uniform float brickCols;
 
 uniform sampler2D bgTexture;
 uniform sampler2D bricksTex;
@@ -98,7 +98,7 @@ void main() {
     float brickPx = step(0.5, brickData.r);
     float brickType = floor(brickData.g * 255.0);
 
-    vec2 brickLocalUv = fract(bricksUv * 20.0);
+    vec2 brickLocalUv = fract(bricksUv * brickCols);
     // Only sample brick appearance texture if there's actually a brick
     vec4 brickCol = (areaMask > 0.5 && brickPx > 0.5) ? sampleAtlas(brickTextures, brickLocalUv, vec2(4.0, 1.0), brickType) : vec4(0.0);
 
