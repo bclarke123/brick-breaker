@@ -2,16 +2,14 @@
     import { onMount } from "svelte";
     import { useThrelte, useTask } from "@threlte/core";
     import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
-    import {
-        Game,
-        gameMaterial,
-        setResolution,
-        updateFromGame,
-        init
-    } from "$lib/brick-breaker";
+    import { Game, GameMaterial } from "$lib/brick-breaker";
 
     const { renderStage, renderer } = useThrelte();
-    const quad = new FullScreenQuad(gameMaterial);
+
+    const game = new Game();
+    const gameMaterial = new GameMaterial(game);
+
+    const quad = new FullScreenQuad(gameMaterial.get());
 
     let width = $state(1);
     let height = $state(1);
@@ -24,9 +22,6 @@
     };
 
     resize();
-
-    const game = new Game();
-    updateFromGame(game);
 
     const keyEvent = (event: KeyboardEvent, down: boolean) => {
         if (event.key === "ArrowLeft") {
@@ -53,21 +48,20 @@
 
             window.removeEventListener("resize", resize);
 
-            gameMaterial.dispose();
+            gameMaterial.get().dispose();
             quad.dispose();
         };
     });
 
     onMount(() => {
-      init();
+        gameMaterial.init();
     });
 
     useTask(
         (delta) => {
             game.tick(delta);
-            updateFromGame(game);
-
-            setResolution(ar, 1);
+            gameMaterial.update();
+            gameMaterial.setResolution(ar, 1);
 
             quad.render(renderer);
         },
