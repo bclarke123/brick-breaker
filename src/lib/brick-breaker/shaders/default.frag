@@ -23,12 +23,6 @@ TYPE translate(TYPE v) { \
 x(float)
 x(vec2)
 
-float sdBox(in vec2 p, in vec2 b)
-{
-    vec2 d = abs(p) - b;
-    return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
-}
-
 float sdCircle(vec2 p, float r)
 {
     return length(p) - r;
@@ -48,19 +42,14 @@ void checkBounds(vec2 uv, vec2 bl, vec2 tr, out float mask, out vec2 localUv) {
 }
 
 void main() {
-    vec2 scale = resolution;
     vec2 offset = (resolution - 1.0) * 0.5;
-    vec2 uv = vUv * scale - offset;
-
-    float ball = sdCircle(translate(ballPos) - uv, 0.005);
+    vec2 uv = vUv * resolution - offset;
 
     vec2 bgScale = vec2(1.0, 1.15);
     vec2 bgOffset = vec2(0.0, 0.0);
 
-    // Center UVs
+    // Center UVs and scale Y by bgScale.y
     vec2 centeredUv = vUv - 0.5;
-
-    // Scale Y by bgScale.y
     float yScale = 1.0 / bgScale.y;
 
     // Scale X to maintain aspect ratio (accounting for viewport aspect ratio)
@@ -70,8 +59,6 @@ void main() {
     // Apply scaling and offset
     vec2 bgUv = centeredUv * vec2(xScale, yScale) - bgOffset + 0.5;
     vec4 bg = texture2D(bgTexture, bgUv);
-    // vec4 bg = mix(vec4(vec3(0.0), 1.0), bgTex, smoothstep(-0.0001, 0.0, uv.x));
-    // bg = mix(vec4(vec3(0.0), 1.0), bg, smoothstep(1.0001, 1.0, uv.x));
 
     vec2 paddleCenter = vec2(translate(playerPos - vec2(0.0, 0.03)));
     vec2 paddleBL = paddleCenter - vec2(playerWidth * 0.5, 0.005);
@@ -105,6 +92,7 @@ void main() {
     float mask = areaMask * brickPx;
     col = mix(col, brickCol, step(1.0, mask) * brickCol.a);
 
+    float ball = sdCircle(translate(ballPos) - uv, 0.005);
     col = mix(BALL, col, smoothstep(0.0, 0.001, ball));
 
     gl_FragColor = col;
