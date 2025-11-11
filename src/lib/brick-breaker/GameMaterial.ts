@@ -26,6 +26,7 @@ export class GameMaterial {
     };
 
     this.material = new THREE.ShaderMaterial({
+      glslVersion: THREE.GLSL3,
       vertexShader,
       fragmentShader,
       uniforms: this.uniforms,

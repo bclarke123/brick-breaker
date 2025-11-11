@@ -1,4 +1,5 @@
-varying vec2 vUv;
+in vec2 vUv;
+out vec4 fragColor;
 
 uniform vec2 resolution;
 uniform vec2 playerPos;
@@ -95,5 +96,5 @@ void main() {
     float ball = sdCircle(translate(ballPos) - uv, 0.005);
     col = mix(BALL, col, smoothstep(0.0, 0.001, ball));
 
-    gl_FragColor = col;
+    fragColor = col;
 }
